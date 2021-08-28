@@ -1,0 +1,4 @@
+[submodule "vendor/tribe-logger-lib"]
+	path = vendor/tribe-logger-lib
+	url = https://github.com/Chase-William/tribe-logger-lib.git
+	branch = main
