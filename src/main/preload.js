@@ -22,5 +22,8 @@ contextBridge.exposeInMainWorld('electron', {
     async getAreaPref(key) {
       return ipcRenderer.invoke('get-pref', key);
     },
+    getWindowBitmap(windowName) {
+      return ipcRenderer.invoke('get-window-bitmap', windowName);
+    },
   },
 });

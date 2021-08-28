@@ -1,3 +1,5 @@
+import { WindowImgetter } from '../../vendor/tribe-logger-lib/dist';
+
 export interface Func {
   (...args: Array<unknown>): void;
 }
@@ -9,7 +11,11 @@ export interface Area {
   height: number;
 }
 
-export default interface IPCSettings {
+export interface IPCWindowBitmap {
+  getWindowBitmap(windowName: string): Promise<WindowImgetter.BitmapResult>;
+}
+
+export default interface IPCSettings extends IPCWindowBitmap {
   myPing(): void;
   on(channel: string, func: Func): void;
   once(channel: string, func: Func): void;

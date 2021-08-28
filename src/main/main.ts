@@ -17,6 +17,7 @@ import log from 'electron-log';
 import ElectronStore from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { WindowImgetter } from '../../vendor/tribe-logger-lib/dist';
 
 export default class AppUpdater {
   constructor() {
@@ -36,11 +37,21 @@ ipcMain.on('ipc-example', async (event, arg) => {
 });
 
 /**
- * Gets user preferences via ipcRenderer request.
+ * Gets user preferences from ipcRenderers.
  */
 ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
   return store.get(key, null);
 });
+
+/**
+ * Handles window bitmap request from ipcRenderers.
+ */
+ipcMain.handle(
+  'get-window-bitmap',
+  (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
+    return WindowImgetter.GetWindowBitmap(windowName, false);
+  }
+);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');

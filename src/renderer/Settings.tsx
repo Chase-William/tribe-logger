@@ -1,5 +1,8 @@
-import { resolve } from 'path';
 import React from 'react';
+import {
+  WindowImgetter,
+  WinImgGetError,
+} from '../../vendor/tribe-logger-lib/dist';
 import IPCSettings, { Area } from './ipc';
 
 export default class Settings extends React.Component {
@@ -11,7 +14,11 @@ export default class Settings extends React.Component {
 
   #selectionHeight = 0;
 
+  #imageBitmap: ImageBitmap;
+
   #ipc: IPCSettings;
+
+  #canvas: React.RefObject<HTMLCanvasElement>;
 
   constructor(props: unknown) {
     super(props);
@@ -28,14 +35,53 @@ export default class Settings extends React.Component {
         // eslint-disable-next-line no-console
         console.log(error);
       });
+
+    this.#canvas = React.createRef();
   }
 
+  /**
+   * Updates the selection fields.
+   * @param area rectangle representing the area of the selection.
+   * @returns Will return void if area was null.
+   */
   UpdateSelectionRect(area: Area): void {
     if (area == null) return;
     this.#selectionLeft = area.left;
     this.#selectionTop = area.top;
     this.#selectionWidth = area.width;
     this.#selectionHeight = area.height;
+  }
+
+  /**
+   * Updates the image bitmap when it is invalidated
+   * while also making sure to re-draw other present visuals.
+   */
+  async UpdateImageBitmap(): Promise<void> {
+    const result: WindowImgetter.BitmapResult = await this.#ipc.getWindowBitmap(
+      'ARK: Survival Evolved'
+    );
+
+    // Error, in the future provide better error messages
+    if (result.ErrorCode !== WinImgGetError.Success) {
+      return;
+    }
+
+    // Create image data structure from buffer
+    const imageData = new ImageData(
+      new Uint8ClampedArray(result.BitmapBuffer),
+      640,
+      480
+    );
+
+    // Cleanup existing bitmap if it exist
+    if (this.#imageBitmap != null) this.#imageBitmap.close();
+    this.#imageBitmap = await createImageBitmap(imageData);
+    const ctx: CanvasRenderingContext2D = this.#canvas.current.getContext('2d');
+    ctx.clearRect(0, 0, 640, 480);
+    this.DrawBitmapImage(ctx);
+    if (this.#selectionWidth > 0 && this.#selectionHeight > 0) {
+      this.DrawSelection(ctx);
+    }
   }
 
   /**
@@ -50,11 +96,30 @@ export default class Settings extends React.Component {
     );
   }
 
+  /**
+   * Draws the bitmapimage to the canvas properly.
+   */
+  DrawBitmapImage(ctx: CanvasRenderingContext2D): void {
+    ctx.save();
+    ctx.translate(
+      this.#canvas.current.width / 2,
+      this.#canvas.current.height / 2
+    ); // center img
+    ctx.rotate((180 * Math.PI) / 180); // rotate
+    ctx.scale(-1, 1);
+    ctx.drawImage(
+      this.#imageBitmap,
+      -this.#imageBitmap.width / 2,
+      -this.#imageBitmap.height / 2
+    );
+    ctx.restore();
+  }
+
   render() {
     return (
       <div>
         <h1>Hello World!</h1>.
-        <button type="button" onClick={this.#ipc.myPing}>
+        <button type="button" onClick={this.UpdateImageBitmap}>
           Test GetWindowBitmap()
         </button>
         <button type="button" id="getTribeLogBtn">
@@ -73,7 +138,7 @@ export default class Settings extends React.Component {
         <button type="button" id="settingsBtn">
           Settings
         </button>
-        <canvas id="myCanvas" width="640px" height="480px" />
+        <canvas id="myCanvas" width="640px" height="480px" ref={this.#canvas} />
       </div>
     );
   }
