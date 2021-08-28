@@ -14,6 +14,7 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import ElectronStore from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
@@ -25,12 +26,20 @@ export default class AppUpdater {
   }
 }
 
+const store: ElectronStore = new ElectronStore();
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+/**
+ * Gets user preferences via ipcRenderer request.
+ */
+ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
+  return store.get(key, null);
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -81,6 +90,8 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: true,
     },
   });
 

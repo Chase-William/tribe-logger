@@ -58,3 +58,7 @@ a:hover {
   align-items: center;
   margin: 20px 0;
 }
+
+#myCanvas {
+  background-color: aquamarine;
+}
