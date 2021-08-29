@@ -16,9 +16,6 @@ export interface IPCWindowBitmap {
 }
 
 export default interface IPCSettings extends IPCWindowBitmap {
-  myPing(): void;
-  on(channel: string, func: Func): void;
-  once(channel: string, func: Func): void;
-  // setAreaPref(key: string, value: Area): void;
+  setAreaPref(key: string, value: Area): void;
   getAreaPref(key: string): Promise<Area>;
 }

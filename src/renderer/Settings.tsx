@@ -35,9 +35,8 @@ export default class Settings extends React.Component {
     this.#ipc = window.electron.ipcRenderer;
 
     // eslint-disable-next-line promise/always-return
-    this.#ipc
-      .getAreaPref('streaming.area')
-      .then(this.UpdateSelectionRect)
+    this.GetAreaPref()
+      .then(this.UpdateSelection)
       .catch((error: unknown) => {
         // eslint-disable-next-line no-console
         console.log(error);
@@ -50,6 +49,8 @@ export default class Settings extends React.Component {
     this.BindForCanvasSelection = this.BindForCanvasSelection.bind(this);
     this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
     this.OnMouseMove = this.OnMouseMove.bind(this);
+    this.SaveAreaPref = this.SaveAreaPref.bind(this);
+    this.GetAreaPref = this.GetAreaPref.bind(this);
   }
 
   /**
@@ -63,6 +64,7 @@ export default class Settings extends React.Component {
     this.#selectionTop = area.top;
     this.#selectionWidth = area.width;
     this.#selectionHeight = area.height;
+    this.UpdateSelection();
   }
 
   /**
@@ -107,7 +109,7 @@ export default class Settings extends React.Component {
   DrawSelection(ctx: CanvasRenderingContext2D): void {
     ctx.fillStyle = '#22AA2266';
     // eslint-disable-next-line prettier/prettier
-    console.log(`Left: ${this.#selectionLeft} Top: ${this.#selectionTop} Width: ${this.#selectionWidth} Height: ${this.#selectionHeight}`);
+    // console.log(`Left: ${this.#selectionLeft} Top: ${this.#selectionTop} Width: ${this.#selectionWidth} Height: ${this.#selectionHeight}`);
     ctx.fillRect(
       this.#selectionLeft,
       this.#selectionTop,
@@ -180,6 +182,24 @@ export default class Settings extends React.Component {
     this.UpdateSelection();
   }
 
+  SaveAreaPref(): void {
+    const area: Area = {
+      left: this.#selectionLeft,
+      top: this.#selectionTop,
+      width: this.#selectionWidth,
+      height: this.#selectionHeight,
+    };
+
+    // Set preferences on save
+    this.#ipc.setAreaPref('area', area);
+  }
+
+  async GetAreaPref(): Promise<void> {
+    const area = await this.#ipc.getAreaPref('area');
+    console.log(area);
+    this.UpdateSelectionRect(area);
+  }
+
   /**
    * If the user leaves the canvas while their mouse is down, unbind event handlers
    * @param ev Mouse event info
@@ -211,10 +231,10 @@ export default class Settings extends React.Component {
         <button type="button" id="getTribeLogBtn">
           Test GetTribeLogText()
         </button>
-        <button type="button" id="saveBtn">
+        <button type="button" onClick={this.SaveAreaPref}>
           Save
         </button>
-        <button type="button" id="getPref">
+        <button type="button" onClick={this.GetAreaPref}>
           Get
         </button>
         <button type="button" id="clearPrefs">
@@ -229,6 +249,8 @@ export default class Settings extends React.Component {
           width="640px"
           height="480px"
           ref={this.#canvas}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           onMouseDown={this.BindForCanvasSelection}
           onMouseUp={this.UnbindForCanvasSelection}
           onMouseLeave={this.UnbindForCanvasSelection}

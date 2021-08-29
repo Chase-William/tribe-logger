@@ -18,6 +18,7 @@ import ElectronStore from 'electron-store';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { WindowImgetter } from '../../vendor/tribe-logger-lib/dist';
+import { Area } from '../renderer/ipc';
 
 export default class AppUpdater {
   constructor() {
@@ -29,19 +30,6 @@ export default class AppUpdater {
 
 const store: ElectronStore = new ElectronStore();
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
-
-/**
- * Gets user preferences from ipcRenderers.
- */
-ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
-  return store.get(key, null);
-});
 
 /**
  * Handles window bitmap request from ipcRenderers.
@@ -55,6 +43,17 @@ ipcMain.handle(
     return result;
   }
 );
+
+/**
+ * Gets user preferences from ipcRenderers.
+ */
+ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
+  return store.get(key, null);
+});
+
+ipcMain.on('set-pref', (_e: Electron.IpcMainEvent, key: string, area: Area) => {
+  store.set(key, area);
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
