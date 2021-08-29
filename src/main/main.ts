@@ -49,7 +49,10 @@ ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
 ipcMain.handle(
   'get-window-bitmap',
   (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
-    return WindowImgetter.GetWindowBitmap(windowName, false);
+    console.log('Before native invoke');
+    const result = WindowImgetter.GetWindowBitmap(windowName, false);
+    console.log(result);
+    return result;
   }
 );
 

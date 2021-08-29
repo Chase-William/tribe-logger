@@ -1,9 +1,14 @@
-import React from 'react';
-import {
-  WindowImgetter,
-  WinImgGetError,
-} from '../../vendor/tribe-logger-lib/dist';
+import React, { SyntheticEvent } from 'react';
+// import {
+//   WindowImgetter,
+//   WinImgGetError,
+// } from '../../vendor/tribe-logger-lib/dist';
 import IPCSettings, { Area } from './ipc';
+
+export interface BitmapResult {
+  ErrorCode: number;
+  BitmapBuffer: ArrayBuffer;
+}
 
 export default class Settings extends React.Component {
   #selectionLeft = 0;
@@ -19,6 +24,8 @@ export default class Settings extends React.Component {
   #ipc: IPCSettings;
 
   #canvas: React.RefObject<HTMLCanvasElement>;
+
+  #isBound = false;
 
   constructor(props: unknown) {
     super(props);
@@ -37,6 +44,12 @@ export default class Settings extends React.Component {
       });
 
     this.#canvas = React.createRef();
+
+    // Bind function to 'this'
+    this.OnUpdateImageBitmap = this.OnUpdateImageBitmap.bind(this);
+    this.BindForCanvasSelection = this.BindForCanvasSelection.bind(this);
+    this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
+    this.OnMouseMove = this.OnMouseMove.bind(this);
   }
 
   /**
@@ -56,19 +69,23 @@ export default class Settings extends React.Component {
    * Updates the image bitmap when it is invalidated
    * while also making sure to re-draw other present visuals.
    */
+  OnUpdateImageBitmap(): void {
+    this.UpdateImageBitmap();
+  }
+
   async UpdateImageBitmap(): Promise<void> {
-    const result: WindowImgetter.BitmapResult = await this.#ipc.getWindowBitmap(
+    const { ErrorCode, BitmapBuffer } = await this.#ipc.getWindowBitmap(
       'ARK: Survival Evolved'
     );
 
     // Error, in the future provide better error messages
-    if (result.ErrorCode !== WinImgGetError.Success) {
+    if (ErrorCode !== 0) {
       return;
     }
 
     // Create image data structure from buffer
     const imageData = new ImageData(
-      new Uint8ClampedArray(result.BitmapBuffer),
+      new Uint8ClampedArray(BitmapBuffer),
       640,
       480
     );
@@ -88,6 +105,9 @@ export default class Settings extends React.Component {
    * Draws the selection rectangle to the canvas.
    */
   DrawSelection(ctx: CanvasRenderingContext2D): void {
+    ctx.fillStyle = '#22AA2266';
+    // eslint-disable-next-line prettier/prettier
+    console.log(`Left: ${this.#selectionLeft} Top: ${this.#selectionTop} Width: ${this.#selectionWidth} Height: ${this.#selectionHeight}`);
     ctx.fillRect(
       this.#selectionLeft,
       this.#selectionTop,
@@ -115,11 +135,77 @@ export default class Settings extends React.Component {
     ctx.restore();
   }
 
+  /**
+   * Binds event handlers to canvas events.
+   */
+  BindForCanvasSelection(e: SyntheticEvent<MouseEvent>): void {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.#selectionLeft = e.nativeEvent.offsetX;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    this.#selectionTop = e.nativeEvent.offsetY;
+    this.#canvas.current.addEventListener('mousemove', this.OnMouseMove);
+    this.#isBound = true;
+  }
+
+  /**
+   * Unbinds event handlers from canvas events, checks to make sure they are not already unbound.
+   * After the unbinding, isBound is set to false.
+   */
+  UnbindForCanvasSelection(): void {
+    /**
+     * If a user leaves while mouse down and then returns and triggers a mouseup, the canvas this will be called.
+     * This is a problem because things are already unbind when they left the canvas with the mousedown, therefore
+     * use the boolean to ignore.
+     */
+
+    if (!this.#isBound) return;
+    // eslint-disable-next-line no-console
+    console.log('Unbinding canvas selection event handlers.');
+    this.#canvas.current.removeEventListener('mousemove', this.OnMouseMove);
+    this.#isBound = false;
+  }
+
+  /**
+   *
+   * @param ev Mouse event info
+   */
+  OnMouseMove(ev: MouseEvent): void {
+    // console.log('Mouse Moving!');
+    // console.log(ev.clientX + " | " + ev.clientY);
+    // Update width / height from move
+    this.#selectionWidth = ev.offsetX - this.#selectionLeft;
+    this.#selectionHeight = ev.offsetY - this.#selectionTop;
+    this.UpdateSelection();
+  }
+
+  /**
+   * If the user leaves the canvas while their mouse is down, unbind event handlers
+   * @param ev Mouse event info
+   */
+  // OnMouseLeave(): void {
+  //   this.UnbindForCanvasSelection();
+  // }
+
+  /**
+   * Updates the selection rectangle when it is invalidated
+   * while also making sure to re-draw other present visuals.
+   */
+  UpdateSelection(): void {
+    const ctx: CanvasRenderingContext2D = this.#canvas.current.getContext('2d');
+    ctx.clearRect(0, 0, 640, 480);
+    if (this.#imageBitmap != null) {
+      this.DrawBitmapImage(ctx);
+    }
+    this.DrawSelection(ctx);
+  }
+
   render() {
     return (
       <div>
         <h1>Hello World!</h1>.
-        <button type="button" onClick={this.UpdateImageBitmap}>
+        <button type="button" onClick={this.OnUpdateImageBitmap}>
           Test GetWindowBitmap()
         </button>
         <button type="button" id="getTribeLogBtn">
@@ -138,7 +224,15 @@ export default class Settings extends React.Component {
         <button type="button" id="settingsBtn">
           Settings
         </button>
-        <canvas id="myCanvas" width="640px" height="480px" ref={this.#canvas} />
+        <canvas
+          id="myCanvas"
+          width="640px"
+          height="480px"
+          ref={this.#canvas}
+          onMouseDown={this.BindForCanvasSelection}
+          onMouseUp={this.UnbindForCanvasSelection}
+          onMouseLeave={this.UnbindForCanvasSelection}
+        />
       </div>
     );
   }
