@@ -1,4 +1,5 @@
-import React, { SyntheticEvent } from 'react';
+import { Button } from '@material-ui/core';
+import React, { MouseEventHandler, SyntheticEvent } from 'react';
 // import {
 //   WindowImgetter,
 //   WinImgGetError,
@@ -45,12 +46,15 @@ export default class Settings extends React.Component {
     this.#canvas = React.createRef();
 
     // Bind function to 'this'
-    this.OnUpdateImageBitmap = this.OnUpdateImageBitmap.bind(this);
+    this.UpdateImageBitmap = this.UpdateImageBitmap.bind(this);
     this.BindForCanvasSelection = this.BindForCanvasSelection.bind(this);
     this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
     this.OnMouseMove = this.OnMouseMove.bind(this);
     this.SaveAreaPref = this.SaveAreaPref.bind(this);
     this.GetAreaPref = this.GetAreaPref.bind(this);
+    // this.ClearPrefs = this.ClearPrefs.bind(this);
+
+    this.UpdateImageBitmap();
   }
 
   /**
@@ -71,10 +75,6 @@ export default class Settings extends React.Component {
    * Updates the image bitmap when it is invalidated
    * while also making sure to re-draw other present visuals.
    */
-  OnUpdateImageBitmap(): void {
-    this.UpdateImageBitmap();
-  }
-
   async UpdateImageBitmap(): Promise<void> {
     const { ErrorCode, BitmapBuffer } = await this.#ipc.getWindowBitmap(
       'ARK: Survival Evolved'
@@ -107,7 +107,7 @@ export default class Settings extends React.Component {
    * Draws the selection rectangle to the canvas.
    */
   DrawSelection(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = '#22AA2266';
+    ctx.fillStyle = '#22AA2255';
     // eslint-disable-next-line prettier/prettier
     // console.log(`Left: ${this.#selectionLeft} Top: ${this.#selectionTop} Width: ${this.#selectionWidth} Height: ${this.#selectionHeight}`);
     ctx.fillRect(
@@ -196,17 +196,9 @@ export default class Settings extends React.Component {
 
   async GetAreaPref(): Promise<void> {
     const area = await this.#ipc.getAreaPref('area');
-    console.log(area);
+    // console.log(area);
     this.UpdateSelectionRect(area);
   }
-
-  /**
-   * If the user leaves the canvas while their mouse is down, unbind event handlers
-   * @param ev Mouse event info
-   */
-  // OnMouseLeave(): void {
-  //   this.UnbindForCanvasSelection();
-  // }
 
   /**
    * Updates the selection rectangle when it is invalidated
@@ -224,26 +216,31 @@ export default class Settings extends React.Component {
   render() {
     return (
       <div>
-        <h1>Hello World!</h1>.
-        <button type="button" onClick={this.OnUpdateImageBitmap}>
-          Test GetWindowBitmap()
-        </button>
-        <button type="button" id="getTribeLogBtn">
-          Test GetTribeLogText()
-        </button>
-        <button type="button" onClick={this.SaveAreaPref}>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        <Button onClick={this.SaveAreaPref} varient="contained" color="primary">
           Save
-        </button>
-        <button type="button" onClick={this.GetAreaPref}>
-          Get
-        </button>
-        <button type="button" id="clearPrefs">
-          Clear Your Preferences
-        </button>
-        <p id="testPref">text</p>
-        <button type="button" id="settingsBtn">
-          Settings
-        </button>
+        </Button>
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        <Button
+          onClick={this.UpdateImageBitmap}
+          varient="contained"
+          color="secondary"
+        >
+          Get Window Image
+        </Button>
+        {/* <Button>
+          Get Tribe Log
+        </Button> */}
+        {/* <button type="button" onClick={this.GetAreaPref}>
+          Get Pref Test
+        </button> */}
+        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
+        {/* @ts-ignore */}
+        {/* <Button onClick={this.ClearPrefs} varient="contained" color="secondary">
+          Reset Settings
+        </Button> */}
         <canvas
           id="myCanvas"
           width="640px"
