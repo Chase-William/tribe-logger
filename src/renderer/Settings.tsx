@@ -1,10 +1,8 @@
 import { Button } from '@material-ui/core';
-import React, { MouseEventHandler, SyntheticEvent } from 'react';
-// import {
-//   WindowImgetter,
-//   WinImgGetError,
-// } from '../../vendor/tribe-logger-lib/dist';
-import IPCSettings, { Area } from './ipc';
+import React, { SyntheticEvent } from 'react';
+import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
+import IPCUtilities from './ipc';
+import { TRIBELOGGER_AREA_KEY } from '../common/Schema';
 
 export interface BitmapResult {
   ErrorCode: number;
@@ -22,7 +20,7 @@ export default class Settings extends React.Component {
 
   #imageBitmap: ImageBitmap;
 
-  #ipc: IPCSettings;
+  #ipc: IPCUtilities;
 
   #canvas: React.RefObject<HTMLCanvasElement>;
 
@@ -30,6 +28,15 @@ export default class Settings extends React.Component {
 
   constructor(props: unknown) {
     super(props);
+    // Bind function to 'this'
+    this.UpdateImageBitmap = this.UpdateImageBitmap.bind(this);
+    this.BindForCanvasSelection = this.BindForCanvasSelection.bind(this);
+    this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
+    this.OnMouseMove = this.OnMouseMove.bind(this);
+    this.SaveAreaPref = this.SaveAreaPref.bind(this);
+    this.GetAreaPref = this.GetAreaPref.bind(this);
+    this.UpdateSelectionRect = this.UpdateSelectionRect.bind(this);
+    this.UpdateSelection = this.UpdateSelection.bind(this);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -45,15 +52,6 @@ export default class Settings extends React.Component {
 
     this.#canvas = React.createRef();
 
-    // Bind function to 'this'
-    this.UpdateImageBitmap = this.UpdateImageBitmap.bind(this);
-    this.BindForCanvasSelection = this.BindForCanvasSelection.bind(this);
-    this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
-    this.OnMouseMove = this.OnMouseMove.bind(this);
-    this.SaveAreaPref = this.SaveAreaPref.bind(this);
-    this.GetAreaPref = this.GetAreaPref.bind(this);
-    // this.ClearPrefs = this.ClearPrefs.bind(this);
-
     this.UpdateImageBitmap();
   }
 
@@ -62,7 +60,7 @@ export default class Settings extends React.Component {
    * @param area rectangle representing the area of the selection.
    * @returns Will return void if area was null.
    */
-  UpdateSelectionRect(area: Area): void {
+  UpdateSelectionRect(area: WindowImagetter.Area): void {
     if (area == null) return;
     this.#selectionLeft = area.left;
     this.#selectionTop = area.top;
@@ -163,8 +161,6 @@ export default class Settings extends React.Component {
      */
 
     if (!this.#isBound) return;
-    // eslint-disable-next-line no-console
-    console.log('Unbinding canvas selection event handlers.');
     this.#canvas.current.removeEventListener('mousemove', this.OnMouseMove);
     this.#isBound = false;
   }
@@ -183,7 +179,7 @@ export default class Settings extends React.Component {
   }
 
   SaveAreaPref(): void {
-    const area: Area = {
+    const area: WindowImagetter.Area = {
       left: this.#selectionLeft,
       top: this.#selectionTop,
       width: this.#selectionWidth,
@@ -191,11 +187,13 @@ export default class Settings extends React.Component {
     };
 
     // Set preferences on save
-    this.#ipc.setAreaPref('area', area);
+    this.#ipc.setPref(TRIBELOGGER_AREA_KEY, area);
   }
 
   async GetAreaPref(): Promise<void> {
-    const area = await this.#ipc.getAreaPref('area');
+    const area: WindowImagetter.Area = (await this.#ipc.getPref(
+      TRIBELOGGER_AREA_KEY
+    )) as WindowImagetter.Area;
     // console.log(area);
     this.UpdateSelectionRect(area);
   }
@@ -216,6 +214,9 @@ export default class Settings extends React.Component {
   render() {
     return (
       <div>
+        {/* <Paper>
+          <Typography>Here you can adjust your settings.</Typography>
+        </Paper> */}
         {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
         {/* @ts-ignore */}
         <Button onClick={this.SaveAreaPref} varient="contained" color="primary">
@@ -238,9 +239,9 @@ export default class Settings extends React.Component {
         </button> */}
         {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
         {/* @ts-ignore */}
-        {/* <Button onClick={this.ClearPrefs} varient="contained" color="secondary">
-          Reset Settings
-        </Button> */}
+        <Button onClick={this.ClearPrefs} varient="contained" color="secondary">
+          Clear
+        </Button>
         <canvas
           id="myCanvas"
           width="640px"

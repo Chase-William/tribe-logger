@@ -1,21 +1,19 @@
-import { WindowImgetter } from '../../vendor/tribe-logger-lib/dist';
+import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 
 export interface Func {
   (...args: Array<unknown>): void;
 }
 
-export interface Area {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
 export interface IPCWindowBitmap {
-  getWindowBitmap(windowName: string): Promise<WindowImgetter.BitmapResult>;
+  getWindowBitmap(windowName: string): Promise<WindowImagetter.BitmapResult>;
 }
 
-export default interface IPCSettings extends IPCWindowBitmap {
-  setAreaPref(key: string, value: Area): void;
-  getAreaPref(key: string): Promise<Area>;
+export default interface IPCUtilities extends IPCWindowBitmap, TribeLogger {
+  setPref(key: string, value: unknown): void;
+  getPref(key: string): Promise<unknown>;
+}
+
+export interface TribeLogger {
+  start(): void;
+  stop(): void;
 }

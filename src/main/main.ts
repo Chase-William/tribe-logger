@@ -15,10 +15,11 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import ElectronStore from 'electron-store';
+import TribeLogger from './TribeLogger';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import { WindowImgetter } from '../../vendor/tribe-logger-lib/dist';
-import { Area } from '../renderer/ipc';
+import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
+import { Preference } from '../common/Schema';
 
 export default class AppUpdater {
   constructor() {
@@ -28,7 +29,7 @@ export default class AppUpdater {
   }
 }
 
-const store: ElectronStore = new ElectronStore();
+const store: ElectronStore<Preference> = new ElectronStore();
 let mainWindow: BrowserWindow | null = null;
 
 /**
@@ -38,7 +39,7 @@ ipcMain.handle(
   'get-window-bitmap',
   (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
     console.log('Before native invoke');
-    const result = WindowImgetter.GetWindowBitmap(windowName, false);
+    const result = WindowImagetter.GetWindowBitmap(windowName, false);
     console.log(result);
     return result;
   }
@@ -51,9 +52,12 @@ ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
   return store.get(key, null);
 });
 
-ipcMain.on('set-pref', (_e: Electron.IpcMainEvent, key: string, area: Area) => {
-  store.set(key, area);
-});
+ipcMain.on(
+  'set-pref',
+  (_e: Electron.IpcMainEvent, key: string, value: unknown) => {
+    store.set(key, value);
+  }
+);
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -100,6 +104,7 @@ const createWindow = async () => {
     show: false,
     width: 1024,
     height: 728,
+    frame: true, // False to hide native frame
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -128,8 +133,9 @@ const createWindow = async () => {
     mainWindow = null;
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
-  menuBuilder.buildMenu();
+  // const menuBuilder = new MenuBuilder(mainWindow);
+  // menuBuilder.buildMenu();
+  mainWindow.removeMenu();
 
   // Open urls in the user's browser
   mainWindow.webContents.on('new-window', (event, url) => {
@@ -161,3 +167,25 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
 });
+
+function errorHandler(): void {
+  console.log('main error handler');
+}
+
+function updateHandler(): void {
+  console.log('main update handler');
+}
+
+const tribeLogger = TribeLogger.createTribeLoggerFromPrefs(
+  store,
+  updateHandler,
+  errorHandler
+);
+
+ipcMain.on(
+  'toggle-tribe-logger',
+  (_e: Electron.IpcMainEvent, shouldRun: boolean) => {
+    if (shouldRun) tribeLogger.Start();
+    else tribeLogger.Stop();
+  }
+);

@@ -2,14 +2,20 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
-    async getAreaPref(key) {
+    async getPref(key) {
       return ipcRenderer.invoke('get-pref', key);
     },
-    setAreaPref(key, value) {
+    setPref(key, value) {
       ipcRenderer.send('set-pref', key, value);
     },
     getWindowBitmap(windowName) {
       return ipcRenderer.invoke('get-window-bitmap', windowName);
+    },
+    start() {
+      ipcRenderer.send('toggle-tribe-logger', true);
+    },
+    stop() {
+      ipcRenderer.send('toggle-tribe-logger', false);
     },
   },
 });
