@@ -11,6 +11,7 @@ export interface IPCWindowBitmap {
 export default interface IPCUtilities extends IPCWindowBitmap, TribeLogger {
   setPref(key: string, value: unknown): void;
   getPref(key: string): Promise<unknown>;
+  updateTribeLogger(propName: string, value: unknown): void;
 }
 
 export interface TribeLogger {

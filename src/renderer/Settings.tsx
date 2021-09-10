@@ -74,9 +74,8 @@ export default class Settings extends React.Component {
    * while also making sure to re-draw other present visuals.
    */
   async UpdateImageBitmap(): Promise<void> {
-    const { ErrorCode, BitmapBuffer } = await this.#ipc.getWindowBitmap(
-      'ARK: Survival Evolved'
-    );
+    const { ErrorCode, BitmapBuffer, Width, Height } =
+      await this.#ipc.getWindowBitmap('ARK: Survival Evolved');
 
     // Error, in the future provide better error messages
     if (ErrorCode !== 0) {
@@ -86,15 +85,23 @@ export default class Settings extends React.Component {
     // Create image data structure from buffer
     const imageData = new ImageData(
       new Uint8ClampedArray(BitmapBuffer),
-      640,
-      480
+      Width,
+      Height
     );
+
+    if (
+      Width !== this.#canvas.current.width ||
+      Height !== this.#canvas.current.height
+    ) {
+      this.#canvas.current.width = Width;
+      this.#canvas.current.height = Height;
+    }
 
     // Cleanup existing bitmap if it exist
     if (this.#imageBitmap != null) this.#imageBitmap.close();
     this.#imageBitmap = await createImageBitmap(imageData);
     const ctx: CanvasRenderingContext2D = this.#canvas.current.getContext('2d');
-    ctx.clearRect(0, 0, 640, 480);
+    ctx.clearRect(0, 0, Width, Height);
     this.DrawBitmapImage(ctx);
     if (this.#selectionWidth > 0 && this.#selectionHeight > 0) {
       this.DrawSelection(ctx);
@@ -188,6 +195,8 @@ export default class Settings extends React.Component {
 
     // Set preferences on save
     this.#ipc.setPref(TRIBELOGGER_AREA_KEY, area);
+    // Update the actual in-memory tribe-logger instance
+    this.#ipc.updateTribeLogger('area', area);
   }
 
   async GetAreaPref(): Promise<void> {
@@ -204,7 +213,7 @@ export default class Settings extends React.Component {
    */
   UpdateSelection(): void {
     const ctx: CanvasRenderingContext2D = this.#canvas.current.getContext('2d');
-    ctx.clearRect(0, 0, 640, 480);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     if (this.#imageBitmap != null) {
       this.DrawBitmapImage(ctx);
     }
@@ -244,8 +253,6 @@ export default class Settings extends React.Component {
         </Button>
         <canvas
           id="myCanvas"
-          width="640px"
-          height="480px"
           ref={this.#canvas}
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore

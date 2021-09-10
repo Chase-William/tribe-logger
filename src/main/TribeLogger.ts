@@ -56,7 +56,7 @@ export default class TribeLogger {
    */
   Start(): void {
     if (this.#isRunning) return;
-    this.#intervalHandle = setInterval(this.Update, 2000);
+    this.#intervalHandle = setInterval(this.Update, 15000);
     this.Update();
     this.#isRunning = true;
   }
@@ -65,6 +65,9 @@ export default class TribeLogger {
    * Reponsible for getting the tribe log text and propagated the proper update depending on it's findings.
    */
   Update(): void {
+    console.log(
+      `Area { ${this.area.left} ${this.area.top} ${this.area.width} ${this.area.height} }`
+    );
     const result: WindowImagetter.TribeLogResult =
       WindowImagetter.TryGetTribeLogText(
         this.windowName,
@@ -77,6 +80,7 @@ export default class TribeLogger {
     } else {
       // Process Tribe Log Text here then call updateHandler
       this.updateHandler();
+      console.log('\nTribe Log Text: \n');
       console.log(result.TribeLogText);
     }
   }

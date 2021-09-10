@@ -38,9 +38,9 @@ let mainWindow: BrowserWindow | null = null;
 ipcMain.handle(
   'get-window-bitmap',
   (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
-    console.log('Before native invoke');
+    // console.log('Before native invoke');
     const result = WindowImagetter.GetWindowBitmap(windowName, false);
-    console.log(result);
+    // console.log(result);
     return result;
   }
 );
@@ -169,17 +169,30 @@ app.on('activate', () => {
 });
 
 function errorHandler(): void {
-  console.log('main error handler');
+  // console.log('main error handler');
 }
 
 function updateHandler(): void {
-  console.log('main update handler');
+  // console.log('main update handler');
 }
 
 const tribeLogger = TribeLogger.createTribeLoggerFromPrefs(
   store,
   updateHandler,
   errorHandler
+);
+
+ipcMain.on(
+  'tribe-logger-update',
+  (_e: Electron.IpcMainEvent, { propName, value }) => {
+    switch (propName) {
+      case 'area':
+        tribeLogger.area = value;
+        break;
+      default:
+        break;
+    }
+  }
 );
 
 ipcMain.on(

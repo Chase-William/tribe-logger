@@ -17,5 +17,8 @@ contextBridge.exposeInMainWorld('electron', {
     stop() {
       ipcRenderer.send('toggle-tribe-logger', false);
     },
+    updateTribeLogger(propName, value) {
+      ipcRenderer.send('tribe-logger-update', { propName, value });
+    },
   },
 });
