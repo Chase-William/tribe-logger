@@ -1,6 +1,11 @@
 import ElectronStore from 'electron-store';
+import fs from 'fs';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
+import PhraseFinder from './PhraseFinder';
+import PhraseResult from './PhraseResult';
+
+const phraseFinder = PhraseFinder.createDefaultPhraseFinder();
 
 export interface ErrorHandler {
   (errorCode: number): void;
@@ -81,9 +86,25 @@ export default class TribeLogger {
       // Process Tribe Log Text here then call updateHandler
       this.updateHandler();
       const logs: string[] = result.TribeLogText.split('Day');
+      // call method on following obj to get all the needed info
+      const phrase = phraseFinder.getBestClassifiedPhrases(logs);
+      const results: PhraseResult[] = Array.from(phrase.values());
+      results.sort((r1: PhraseResult, r2: PhraseResult) => {
+        if (r1.index < r2.index) {
+          return -1;
+        }
+        return 1;
+      });
+      // console.log(results);
+      fs.writeFileSync('fuse_results.json', JSON.stringify(results));
 
-      console.log('\nTribe Log Text: \n');
-      console.log(logs);
+      let logstr = '';
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < logs.length; i++) {
+        logstr += logs[i];
+      }
+
+      fs.writeFileSync('logs.txt', logstr);
     }
   }
 

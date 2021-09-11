@@ -15,8 +15,10 @@ tribe-member:
   kicked: "<tribe-member> was removed from the Tribe!"
   podded: "<tribe-member> froze <dino-name> - Lvl <dino-lvl> (<dino-type>)" # Relative to Tribe-Member and Friendly-Dino
   demolished: "<tribe-member> demolished a '<structure-type>'!" #Relative to Tribe-Member and Structure
+  tamed: "<tribe-member> Tamed an <dino-name> - Lvl <dino-level> (<dino-type>)"
 
 tek-sensor:
   enemy-dino: "<tek-sensor-name> trigged by an enemy dino."
   enemy-player: "<tek-sensor-name> trigged by an enemy survivor."
   wild-dino: "<tek-sensor-name> trigged by something."
+  friendly_survivor: "<tek-sensor-name> triggered by a friendly survivor."
