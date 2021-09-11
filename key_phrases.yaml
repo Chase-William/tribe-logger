@@ -11,6 +11,7 @@ friendly-dino:
 tribe-member:
   invited: "<tribe-member> was added to the Tribe by <tribe-member-inviter>!"
   rank-changed: "<tribe-member> set to Rank Group <rank>!"
+  admin-promoted: "<tribe-member> was promoted to a Tribe Admin by <tribe-member-promoter>"
   kicked: "<tribe-member> was removed from the Tribe!"
   podded: "<tribe-member> froze <dino-name> - Lvl <dino-lvl> (<dino-type>)" # Relative to Tribe-Member and Friendly-Dino
   demolished: "<tribe-member> demolished a '<structure-type>'!" #Relative to Tribe-Member and Structure

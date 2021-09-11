@@ -80,8 +80,10 @@ export default class TribeLogger {
     } else {
       // Process Tribe Log Text here then call updateHandler
       this.updateHandler();
+      const logs: string[] = result.TribeLogText.split('Day');
+
       console.log('\nTribe Log Text: \n');
-      console.log(result.TribeLogText);
+      console.log(logs);
     }
   }
 
