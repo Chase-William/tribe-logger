@@ -2,8 +2,8 @@ import ElectronStore from 'electron-store';
 import fs from 'fs';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
-import PhraseFinder from './PhraseFinder';
-import PhraseResult from './PhraseResult';
+import PhraseFinder from './phrasing/PhraseFinder';
+import PhraseResult from './phrasing/PhraseResult';
 
 const phraseFinder = PhraseFinder.createDefaultPhraseFinder();
 
