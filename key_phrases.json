@@ -1,0 +1,19 @@
+{
+  "TribeLogPhrases": {
+    "EnemyDinoKilled": "Your Tribe killed",
+    "EnemyPlayerKilled": "Your Tribe killed",
+    "TribeMemberInvited": "was added to the Tribe by",
+    "TribeMemberRankChanged": "set to Rank Group",
+    "TribeMemberAdminPromoted": "was promoted to a Tribe Admin by",
+    "TribeMemberKicked": "was removed from the Tribe!",
+    "TribeMemberPodded": "froze",
+    "TribeMemberDemolished": "demolished a",
+    "TribeMemberTamed": "Tamed an",
+    "TribeMemberClaimed": "claimed",
+    "TribeMemberUnclaimed": "unclaimed",
+    "TekSensorEnemyDino": "trigged by an enemy dino.",
+    "TekSensorEnemyPlayer": "trigged by an enemy survivor.",
+    "TekSensorWildDino": "trigged by something.",
+    "TekSensorFriendlySurvivor": "triggered by a friendly survivor."
+  }
+}

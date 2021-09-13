@@ -2,7 +2,13 @@ import Fuse from 'fuse.js';
 import KeyPhraser, { PhraseType } from './KeyPhraser';
 import PhraseResult from './PhraseResult';
 
-function condensePhraseType(
+/**
+ * Normalizes the phrases found by judging them off their weight and putting them into the outputPhrases collection.
+ * @param phraseType The phraseType to be normalized.
+ * @param inputPhrases All the phrases found acting as our source data collection.
+ * @param outputPhrases The normalized output data collection.
+ */
+function normalizePhraseType(
   phraseType: PhraseType,
   inputPhrases: Map<PhraseType, Fuse.FuseResult<string>[]>,
   outputPhrases: Map<number, PhraseResult>
@@ -99,6 +105,11 @@ export default class PhraseFinder {
     return new PhraseFinder(KeyPhraser.getDefaultKeyPhraser());
   }
 
+  /**
+   * Gets a map containing the best cased normalized results from the logs given.
+   * @param logs Data source.
+   * @returns Map containing all the logs and their PhaseType, plus other data.
+   */
   getBestClassifiedPhrases(logs: string[]): Map<number, PhraseResult> {
     const phraseResults = new Map<PhraseType, Fuse.FuseResult<string>[]>();
     const outputPhrases = new Map<number, PhraseResult>();
@@ -115,7 +126,6 @@ export default class PhraseFinder {
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < this.#keyPhraser.count; i++) {
       currentPhrase = i as PhraseType;
-      console.log(i);
       phraseResults.set(
         currentPhrase,
         fuse.search(this.#keyPhraser.getPhrasePattern(currentPhrase))
@@ -125,7 +135,7 @@ export default class PhraseFinder {
     // Condense phrases to a single instance via the highest scores
     // eslint-disable-next-line no-plusplus
     for (let row = 0; row < this.#keyPhraser.count; row++) {
-      condensePhraseType(row as PhraseType, phraseResults, outputPhrases);
+      normalizePhraseType(row as PhraseType, phraseResults, outputPhrases);
     }
 
     return outputPhrases;
