@@ -1,14 +1,21 @@
 import ElectronStore from 'electron-store';
 import fs from 'fs';
+import Fuse from 'fuse.js';
 import getBestFitForAll, {
   Phrase,
   PhrasedResult,
 } from 'fuzzy-phrase-classifier';
+import XRegExp from 'xregexp';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
 
 export interface ErrorHandler {
   (errorCode: number): void;
+}
+
+interface LogHeaderInfo {
+  Day: string;
+  Time: string;
 }
 
 export default class TribeLogger {
@@ -85,6 +92,7 @@ export default class TribeLogger {
     } else {
       // Process Tribe Log Text here then call updateHandler
       this.updateHandler();
+
       const logs: string[] = result.TribeLogText.split('Day');
 
       const phrases: Phrase[] = JSON.parse(
@@ -104,6 +112,40 @@ export default class TribeLogger {
       }
 
       fs.writeFileSync('logs.txt', logstr);
+
+      {
+        const findDateLogs: string[] = result.TribeLogText.split('\n');
+        const fuse = new Fuse(findDateLogs, {
+          findAllMatches: true,
+        });
+        const daySplitResults: Fuse.FuseResult<string>[] =
+          fuse.search<string>('Day');
+
+        const headerInfo: LogHeaderInfo[] = new Array<LogHeaderInfo>(
+          findDateLogs.length
+        );
+
+        const date = XRegExp(
+          `(?<day> [0-9]{5})`
+          // (?<minute> [0-9]{2})
+          // (?<second> [0-9]{2})
+        );
+        const time = XRegExp(`
+          (?<hour> [0-9]{2})`);
+        // (?<minute> [0-9]{2}) [^^]
+        // (?<second> [0-9]{2})
+        // eslint-disable-next-line no-plusplus
+        for (let index = 0; index < results.length; index++) {
+          let match = XRegExp.exec(daySplitResults[index].item, date);
+          console.log(
+            `day: ${match.groups?.day}` // hour: ${match.groups?.hour}` // minute: ${match.groups?.minute} second: ${match.groups?.second}`
+          );
+          match = XRegExp.exec(daySplitResults[index].item, time);
+          console.log(
+            `hour: ${match.groups?.hour}` // minute: ${match.groups?.minute} second: ${match.groups?.second}`
+          );
+        }
+      }
     }
   }
 
