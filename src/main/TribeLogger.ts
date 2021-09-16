@@ -1,11 +1,11 @@
 import ElectronStore from 'electron-store';
 import fs from 'fs';
+import getBestFitForAll, {
+  Phrase,
+  PhrasedResult,
+} from 'fuzzy-phrase-classifier';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
-import PhraseFinder from './phrasing/PhraseFinder';
-import PhraseResult from './phrasing/PhraseResult';
-
-const phraseFinder = PhraseFinder.createDefaultPhraseFinder();
 
 export interface ErrorHandler {
   (errorCode: number): void;
@@ -86,16 +86,15 @@ export default class TribeLogger {
       // Process Tribe Log Text here then call updateHandler
       this.updateHandler();
       const logs: string[] = result.TribeLogText.split('Day');
-      // call method on following obj to get all the needed info
-      const phrase = phraseFinder.getBestClassifiedPhrases(logs);
-      const results: PhraseResult[] = Array.from(phrase.values());
-      results.sort((r1: PhraseResult, r2: PhraseResult) => {
-        if (r1.index < r2.index) {
-          return -1;
-        }
-        return 1;
-      });
-      console.log(results);
+
+      const phrases: Phrase[] = JSON.parse(
+        fs.readFileSync('key_phrases.json', {
+          encoding: 'utf-8',
+        }) as string
+      );
+
+      const results: PhrasedResult[] = getBestFitForAll(logs, phrases);
+
       fs.writeFileSync('fuse_results.json', JSON.stringify(results));
 
       let logstr = '';

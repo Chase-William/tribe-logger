@@ -1,64 +1,70 @@
-{
-  "TribeLogPhrases": {
-    "EnemyDinoKilled": {
-      "QueryString": "Your Tribe killed",
-      "Enabled": true
-    },
-    "EnemyPlayerKilled": {
-      "QueryString": "Your Tribe killed",
-      "Enabled": true
-    },
-    "TribeMemberInvited": {
-      "QueryString": "was added to the Tribe by",
-      "Enabled": true
-    },
-    "TribeMemberRankChanged": {
-      "QueryString": "set to Rank Group",
-      "Enabled": true
-    },
-    "TribeMemberAdminPromoted": {
-      "QueryString": "was promoted to a Tribe Admin by",
-      "Enabled": true
-    },
-    "TribeMemberKicked": {
-      "QueryString": "was removed from the Tribe!",
-      "Enabled": true
-    },
-    "TribeMemberPodded": {
-      "QueryString": "froze",
-      "Enabled": true
-    },
-    "TribeMemberDemolished": {
-      "QueryString": "demolished a",
-      "Enabled": true
-    },
-    "TribeMemberTamed": {
-      "QueryString": "Tamed an",
-      "Enabled": true
-    },
-    "TribeMemberClaimed": {
-      "QueryString": "claimed",
-      "Enabled": true
-    },
-    "TribeMemberUnclaimed": {
-      "QueryString": "unclaimed",
-      "Enabled": true
-    },
-    "TekSensorEnemyDino": {
-      "QueryString": "trigged by an enemy dino.",
-      "Enabled": true
-    },
-    "TekSensorEnemyPlayer": {
-      "QueryString": "trigged by an enemy survivor.",
-      "Enabled": true
-    },
-    "TekSensorWildDino": {
-      "QueryString": "trigged by something.",
-      "Enabled": true
-    },
-    "TekSensorFriendlySurvivor": {
-      "QueryString": "triggered by a friendly survivor.",
-      "Enabled": true
-    }
+[
+  {
+    "PhraseName": "EnemyDinoKilled",
+    "Pattern": "Your Tribe killed"
+  },
+  {
+    "PhraseName": "EnemyPlayerKilled",
+    "Pattern": "Your Tribe killed"
+  },
+  {
+    "PhraseName": "TribeMemberInvited",
+    "Pattern": "was added to the Tribe by"
+  },
+  {
+    "PhraseName": "TribeMemberRankChanged",
+    "Pattern": "set to Rank Group"
+  },
+  {
+    "PhraseName": "TribeMemberAdminPromoted",
+    "Pattern": "was promoted to a Tribe Admin by"
+  },
+  {
+    "PhraseName": "TribeMemberKicked",
+    "Pattern": "was removed from the Tribe!"
+  },
+  {
+    "PhraseName": "TribeMemberPodded",
+    "Pattern": "froze"
+  },
+  {
+    "PhraseName": "TribeMemberDemolished",
+    "Pattern": "demolished a"
+  },
+  {
+    "PhraseName": "TribeMemberTamed",
+    "Pattern": "Tamed an"
+  },
+  {
+    "PhraseName": "TribeMemberClaimed",
+    "Pattern": "claimed"
+  },
+  {
+    "PhraseName": "TribeMemberUnclaimed",
+    "Pattern": "unclaimed"
+  },
+  {
+    "PhraseName": "TekSensorEnemyDino",
+    "Pattern": "trigged by an enemy dino."
+  },
+  {
+    "PhraseName": "TekSensorEnemyPlayer",
+    "Pattern": "trigged by an enemy survivor."
+  },
+  {
+    "PhraseName": "TekSensorWildDino",
+    "Pattern": "trigged by something."
+  },
+  {
+    "PhraseName": "TekSensorFriendlySurvivor",
+    "Pattern": "triggered by a friendly survivor."
+  },
+  {
+    "PhraseName": "StructureDemolishedByEnemy",
+    "Pattern": "was destroyed"
+  },
+  {
+    "PhraseName": "Test",
+    "Pattern": "00000 00:00:00"
   }
-}
+]
