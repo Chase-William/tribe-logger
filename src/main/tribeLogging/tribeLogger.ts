@@ -129,7 +129,7 @@ export default class TribeLogger {
         );
 
         const date = XRegExp(
-          `[^^]{1,5}(?<day>[OoQIiLlJjBSsZz0-9]{5})[^^]{1,4}(?<hour>[OoQIiLlJjBSsZz0-9]{2})[^^]{0,3}(?<minute>[OoQIiLlJjBSsZz0-9]{2})[^^]{0,3}(?<second>[OoQIiLlJjBSsZz0-9]{2})`
+          `[^^]{1,5}(?<day>[OoDQIiLJjBSsZz0-9]{5})[^^]{1,2}(?<hour>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,2}(?<minute>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,2}(?<second>[OoDQIiLJjBSsZz0-9]{2})`
         );
         // eslint-disable-next-line no-plusplus
         for (let index = 0; index < daySplitResults.length; index++) {
@@ -143,9 +143,9 @@ export default class TribeLogger {
             // eslint-disable-next-line no-continue
             continue;
           }
-          console.log(
-            `day: ${match.groups.day} hour: ${match.groups.hour} minute: ${match.groups.minute} second: ${match.groups.second}`
-          );
+          // console.log(
+          //   `day: ${match.groups.day} hour: ${match.groups.hour} minute: ${match.groups.minute} second: ${match.groups.second}`
+          // );
 
           regexLogs.push(
             new TribeLog(

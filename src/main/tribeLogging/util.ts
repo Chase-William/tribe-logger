@@ -38,6 +38,5 @@ export default function patchStringsToNumbers(toBeNumber: string): number {
   for (let charIndex = 0; charIndex < toBeNumber.length; charIndex++) {
     cleaned += getCharToNum(toBeNumber[charIndex]);
   }
-  console.log(cleaned);
   return parseInt(cleaned, 10);
 }
