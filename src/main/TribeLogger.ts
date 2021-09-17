@@ -126,23 +126,21 @@ export default class TribeLogger {
         );
 
         const date = XRegExp(
-          `(?<day> [0-9]{5})`
-          // (?<minute> [0-9]{2})
-          // (?<second> [0-9]{2})
+          `[^^]{1,5}(?<day>[OoDQIiLJjBSsZz0-9]{5})[^^]{1,4}(?<hour>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,3}(?<minute>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,3}(?<second>[OoDQIiLJjBSsZz0-9]{2})`
         );
-        const time = XRegExp(`
-          (?<hour> [0-9]{2})`);
-        // (?<minute> [0-9]{2}) [^^]
-        // (?<second> [0-9]{2})
         // eslint-disable-next-line no-plusplus
-        for (let index = 0; index < results.length; index++) {
-          let match = XRegExp.exec(daySplitResults[index].item, date);
+        for (let index = 0; index < daySplitResults.length; index++) {
+          const match = XRegExp.exec(daySplitResults[index].item, date);
+          if (match == null) {
+            console.log(`Index: ${index} had no matches...\n
+              ${daySplitResults[index].item}
+            `);
+
+            // eslint-disable-next-line no-continue
+            continue;
+          }
           console.log(
-            `day: ${match.groups?.day}` // hour: ${match.groups?.hour}` // minute: ${match.groups?.minute} second: ${match.groups?.second}`
-          );
-          match = XRegExp.exec(daySplitResults[index].item, time);
-          console.log(
-            `hour: ${match.groups?.hour}` // minute: ${match.groups?.minute} second: ${match.groups?.second}`
+            `day: ${match.groups?.day} hour: ${match.groups?.hour} minute: ${match.groups?.minute} second: ${match.groups?.second}`
           );
         }
       }
