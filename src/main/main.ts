@@ -15,7 +15,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import ElectronStore from 'electron-store';
-import TribeLogger from './TribeLogger';
+import TribeLogger from './tribeLogging/tribeLogger';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
@@ -198,7 +198,7 @@ ipcMain.on(
 ipcMain.on(
   'toggle-tribe-logger',
   (_e: Electron.IpcMainEvent, shouldRun: boolean) => {
-    if (shouldRun) tribeLogger.Start();
-    else tribeLogger.Stop();
+    if (shouldRun) tribeLogger.start();
+    else tribeLogger.stop();
   }
 );

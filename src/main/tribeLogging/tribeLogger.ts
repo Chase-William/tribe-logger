@@ -6,8 +6,10 @@ import getBestFitForAll, {
   PhrasedResult,
 } from 'fuzzy-phrase-classifier';
 import XRegExp from 'xregexp';
-import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
-import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
+import { WindowImagetter } from '../../../vendor/tribe-logger-lib/dist/index';
+import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../../common/Schema';
+import TribeLog from './tribeLog';
+import patchStringsToNumbers from './util';
 
 export interface ErrorHandler {
   (errorCode: number): void;
@@ -36,9 +38,9 @@ export default class TribeLogger {
   errorHandler: ErrorHandler;
 
   constructor() {
-    this.Start = this.Start.bind(this);
-    this.Update = this.Update.bind(this);
-    this.Stop = this.Stop.bind(this);
+    this.start = this.start.bind(this);
+    this.update = this.update.bind(this);
+    this.stop = this.stop.bind(this);
   }
 
   /**
@@ -66,17 +68,17 @@ export default class TribeLogger {
   /**
    * Starts the TribeLogger.
    */
-  Start(): void {
+  start(): void {
     if (this.#isRunning) return;
-    this.#intervalHandle = setInterval(this.Update, 15000);
-    this.Update();
+    this.#intervalHandle = setInterval(this.update, 15000);
+    this.update();
     this.#isRunning = true;
   }
 
   /**
    * Reponsible for getting the tribe log text and propagated the proper update depending on it's findings.
    */
-  Update(): void {
+  update(): void {
     // console.log(
     //   `Area { ${this.area.left} ${this.area.top} ${this.area.width} ${this.area.height} }`
     // );
@@ -113,6 +115,7 @@ export default class TribeLogger {
 
       fs.writeFileSync('logs.txt', logstr);
 
+      const regexLogs = new Array<TribeLog>();
       {
         const findDateLogs: string[] = result.TribeLogText.split('\n');
         const fuse = new Fuse(findDateLogs, {
@@ -126,31 +129,45 @@ export default class TribeLogger {
         );
 
         const date = XRegExp(
-          `[^^]{1,5}(?<day>[OoDQIiLJjBSsZz0-9]{5})[^^]{1,4}(?<hour>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,3}(?<minute>[OoDQIiLJjBSsZz0-9]{2})[^^]{0,3}(?<second>[OoDQIiLJjBSsZz0-9]{2})`
+          `[^^]{1,5}(?<day>[OoQIiLlJjBSsZz0-9]{5})[^^]{1,4}(?<hour>[OoQIiLlJjBSsZz0-9]{2})[^^]{0,3}(?<minute>[OoQIiLlJjBSsZz0-9]{2})[^^]{0,3}(?<second>[OoQIiLlJjBSsZz0-9]{2})`
         );
         // eslint-disable-next-line no-plusplus
         for (let index = 0; index < daySplitResults.length; index++) {
           const match = XRegExp.exec(daySplitResults[index].item, date);
           if (match == null) {
             console.log(`Index: ${index} had no matches...\n
-              ${daySplitResults[index].item}
+              ${daySplitResults[index].item}\n
+              ^^ Won't be added to output collection...
             `);
 
             // eslint-disable-next-line no-continue
             continue;
           }
           console.log(
-            `day: ${match.groups?.day} hour: ${match.groups?.hour} minute: ${match.groups?.minute} second: ${match.groups?.second}`
+            `day: ${match.groups.day} hour: ${match.groups.hour} minute: ${match.groups.minute} second: ${match.groups.second}`
+          );
+
+          regexLogs.push(
+            new TribeLog(
+              daySplitResults[index].item,
+              'Not Available Yet',
+              patchStringsToNumbers(match.groups.day),
+              patchStringsToNumbers(match.groups.hour),
+              patchStringsToNumbers(match.groups.minute),
+              patchStringsToNumbers(match.groups.second)
+            )
           );
         }
       }
+
+      fs.writeFileSync('regexed_logs.json', JSON.stringify(regexLogs));
     }
   }
 
   /**
    * Stops the TribeLogger.
    */
-  Stop(): void {
+  stop(): void {
     if (!this.#isRunning) return;
     clearInterval(this.#intervalHandle);
     this.#intervalHandle = null;
