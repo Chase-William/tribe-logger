@@ -8,22 +8,6 @@
     "Pattern": "Your Tribe killed"
   },
   {
-    "PhraseName": "TribeMemberInvited",
-    "Pattern": "was added to the Tribe by"
-  },
-  {
-    "PhraseName": "TribeMemberRankChanged",
-    "Pattern": "set to Rank Group"
-  },
-  {
-    "PhraseName": "TribeMemberAdminPromoted",
-    "Pattern": "was promoted to a Tribe Admin by"
-  },
-  {
-    "PhraseName": "TribeMemberKicked",
-    "Pattern": "was removed from the Tribe!"
-  },
-  {
     "PhraseName": "TribeMemberPodded",
     "Pattern": "froze"
   },
@@ -36,35 +20,11 @@
     "Pattern": "Tamed an"
   },
   {
-    "PhraseName": "TribeMemberClaimed",
-    "Pattern": "claimed"
-  },
-  {
-    "PhraseName": "TribeMemberUnclaimed",
-    "Pattern": "unclaimed"
-  },
-  {
-    "PhraseName": "TekSensorEnemyDino",
-    "Pattern": "trigged by an enemy dino."
-  },
-  {
-    "PhraseName": "TekSensorEnemyPlayer",
-    "Pattern": "trigged by an enemy survivor."
-  },
-  {
-    "PhraseName": "TekSensorWildDino",
-    "Pattern": "trigged by something."
-  },
-  {
-    "PhraseName": "TekSensorFriendlySurvivor",
-    "Pattern": "triggered by a friendly survivor."
-  },
-  {
     "PhraseName": "StructureDemolishedByEnemy",
     "Pattern": "was destroyed"
   },
   {
-    "PhraseName": "Test",
-    "Pattern": "00000 00:00:00"
+    "PhraseName": "DinoStarvedToDeath",
+    "Pattern": "starved to death"
   }
 ]

@@ -15,7 +15,7 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import ElectronStore from 'electron-store';
-import TribeLogger from './tribeLogging/tribeLogger';
+import TribeLogger from '../common/tribeLogger';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';

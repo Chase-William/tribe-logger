@@ -5612,10 +5612,10 @@ fuse.js@^6.4.6:
   resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-6.4.6.tgz#62f216c110e5aa22486aff20be7896d19a059b79"
   integrity sha512-/gYxR/0VpXmWSfZOIPS3rWwU8SHgsRTwWuXhyb2O6s7aRuVtHtxCkR33bNYu3wyLyNx/Wpv0vU7FZy8Vj53VNw==
 
-fuzzy-phrase-classifier@^1.0.2:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/fuzzy-phrase-classifier/-/fuzzy-phrase-classifier-1.0.4.tgz#08a1ab5f43583daf528b391d32abb9feff6b3285"
-  integrity sha512-iYvFWqSYFamZFNDKDqoqhPap5rKEMObml7dalHRMm+tpVnJ4Og3f+DonIi83nvxh48LiItZxKTygcBD+oxAtdw==
+fuzzy-phrase-classifier@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/fuzzy-phrase-classifier/-/fuzzy-phrase-classifier-1.1.1.tgz#4589190d3bb28d256469c0695b931d2221d9ef56"
+  integrity sha512-muiVGahXvoSTxkr++fvGzGUSN1ES6kierBcqsPUFSuJpM0vZ1p3OaSItOV5a6dXmlpT6Sp+vLOhyIdNDn9qz6Q==
   dependencies:
     fuse.js "^6.4.6"
 
