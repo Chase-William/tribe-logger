@@ -1,5 +1,21 @@
+import { createTheme, ThemeProvider } from '@material-ui/core';
 import React from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
 import App from './App';
 
-render(<App />, document.getElementById('root'));
+const theme = createTheme({
+  palette: {
+    primary: {
+      light: '#123312',
+      main: '#573921',
+      dark: '#760859',
+    },
+  },
+});
+
+ReactDOM.render(
+  <ThemeProvider theme={theme}>
+    <App />
+  </ThemeProvider>,
+  document.getElementById('root')
+);

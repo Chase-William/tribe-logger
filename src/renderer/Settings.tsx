@@ -1,22 +1,17 @@
-import { Button } from '@material-ui/core';
+import { Button, Typography } from '@material-ui/core';
 import React, { SyntheticEvent } from 'react';
-import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import IPCUtilities from './ipc';
-import { TRIBELOGGER_AREA_KEY } from '../common/Schema';
+import { TRIBELOGGER_LOGSELECTION_KEY, LogSelection } from '../common/Schema';
 
 export interface BitmapResult {
   ErrorCode: number;
   BitmapBuffer: ArrayBuffer;
 }
 
+const DESIRED_WIDTH = 700;
+
 export default class Settings extends React.Component {
-  #selectionLeft = 0;
-
-  #selectionTop = 0;
-
-  #selectionWidth = 0;
-
-  #selectionHeight = 0;
+  #logSelection: LogSelection;
 
   #imageBitmap: ImageBitmap;
 
@@ -26,6 +21,8 @@ export default class Settings extends React.Component {
 
   #isBound = false;
 
+  #scaleFactor: number;
+
   constructor(props: unknown) {
     super(props);
     // Bind function to 'this'
@@ -34,7 +31,7 @@ export default class Settings extends React.Component {
     this.UnbindForCanvasSelection = this.UnbindForCanvasSelection.bind(this);
     this.OnMouseMove = this.OnMouseMove.bind(this);
     this.SaveAreaPref = this.SaveAreaPref.bind(this);
-    this.GetAreaPref = this.GetAreaPref.bind(this);
+    // this.GetAreaPref = this.GetAreaPref.bind(this);
     this.UpdateSelectionRect = this.UpdateSelectionRect.bind(this);
     this.UpdateSelection = this.UpdateSelection.bind(this);
 
@@ -43,12 +40,36 @@ export default class Settings extends React.Component {
     this.#ipc = window.electron.ipcRenderer;
 
     // eslint-disable-next-line promise/always-return
-    this.GetAreaPref()
-      .then(this.UpdateSelection)
-      .catch((error: unknown) => {
-        // eslint-disable-next-line no-console
-        console.log(error);
-      });
+    // this.GetAreaPref()
+    //   .then(())
+    //   .catch((error: unknown) => {
+    //     // eslint-disable-next-line no-console
+    //     console.log(error);
+    //   });
+
+    (async () => {
+      const logSelection = (await this.#ipc.getPref(
+        TRIBELOGGER_LOGSELECTION_KEY
+      )) as LogSelection;
+      if (logSelection === null || typeof logSelection === 'undefined') {
+        this.#logSelection = {
+          name: 'default',
+          baseImageRect: {
+            height: 0,
+            width: 0,
+          },
+          selectionRect: {
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0,
+          },
+        };
+        console.log(this.#logSelection);
+        return;
+      }
+      this.UpdateSelectionRect(logSelection);
+    })();
 
     this.#canvas = React.createRef();
 
@@ -60,12 +81,9 @@ export default class Settings extends React.Component {
    * @param area rectangle representing the area of the selection.
    * @returns Will return void if area was null.
    */
-  UpdateSelectionRect(area: WindowImagetter.Area): void {
-    if (area == null) return;
-    this.#selectionLeft = area.left;
-    this.#selectionTop = area.top;
-    this.#selectionWidth = area.width;
-    this.#selectionHeight = area.height;
+  UpdateSelectionRect(logSelection: LogSelection): void {
+    if (logSelection == null) return;
+    this.#logSelection = logSelection;
     this.UpdateSelection();
   }
 
@@ -89,12 +107,16 @@ export default class Settings extends React.Component {
       Height
     );
 
+    this.#scaleFactor = DESIRED_WIDTH / Width;
+    console.log(this.#scaleFactor);
+
     if (
       Width !== this.#canvas.current.width ||
       Height !== this.#canvas.current.height
     ) {
-      this.#canvas.current.width = Width;
-      this.#canvas.current.height = Height;
+      this.#canvas.current.height = Height * this.#scaleFactor;
+      this.#logSelection.baseImageRect.width = Width;
+      this.#logSelection.baseImageRect.height = Height;
     }
 
     // Cleanup existing bitmap if it exist
@@ -103,7 +125,10 @@ export default class Settings extends React.Component {
     const ctx: CanvasRenderingContext2D = this.#canvas.current.getContext('2d');
     ctx.clearRect(0, 0, Width, Height);
     this.DrawBitmapImage(ctx);
-    if (this.#selectionWidth > 0 && this.#selectionHeight > 0) {
+    if (
+      this.#logSelection.selectionRect.width > 0 &&
+      this.#logSelection.selectionRect.height > 0
+    ) {
       this.DrawSelection(ctx);
     }
   }
@@ -116,10 +141,10 @@ export default class Settings extends React.Component {
     // eslint-disable-next-line prettier/prettier
     // console.log(`Left: ${this.#selectionLeft} Top: ${this.#selectionTop} Width: ${this.#selectionWidth} Height: ${this.#selectionHeight}`);
     ctx.fillRect(
-      this.#selectionLeft,
-      this.#selectionTop,
-      this.#selectionWidth,
-      this.#selectionHeight
+      this.#logSelection.selectionRect.left,
+      this.#logSelection.selectionRect.top,
+      this.#logSelection.selectionRect.width,
+      this.#logSelection.selectionRect.height
     );
   }
 
@@ -133,7 +158,7 @@ export default class Settings extends React.Component {
       this.#canvas.current.height / 2
     ); // center img
     ctx.rotate((180 * Math.PI) / 180); // rotate
-    ctx.scale(-1, 1);
+    ctx.scale(-this.#scaleFactor, this.#scaleFactor);
     ctx.drawImage(
       this.#imageBitmap,
       -this.#imageBitmap.width / 2,
@@ -148,10 +173,10 @@ export default class Settings extends React.Component {
   BindForCanvasSelection(e: SyntheticEvent<MouseEvent>): void {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    this.#selectionLeft = e.nativeEvent.offsetX;
+    this.#logSelection.selectionRect.left = e.nativeEvent.offsetX;
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    this.#selectionTop = e.nativeEvent.offsetY;
+    this.#logSelection.selectionRect.top = e.nativeEvent.offsetY;
     this.#canvas.current.addEventListener('mousemove', this.OnMouseMove);
     this.#isBound = true;
   }
@@ -180,32 +205,24 @@ export default class Settings extends React.Component {
     // console.log('Mouse Moving!');
     // console.log(ev.clientX + " | " + ev.clientY);
     // Update width / height from move
-    this.#selectionWidth = ev.offsetX - this.#selectionLeft;
-    this.#selectionHeight = ev.offsetY - this.#selectionTop;
+    this.#logSelection.selectionRect.width =
+      ev.offsetX - this.#logSelection.selectionRect.left;
+    this.#logSelection.selectionRect.height =
+      ev.offsetY - this.#logSelection.selectionRect.top;
     this.UpdateSelection();
   }
 
   SaveAreaPref(): void {
-    const area: WindowImagetter.Area = {
-      left: this.#selectionLeft,
-      top: this.#selectionTop,
-      width: this.#selectionWidth,
-      height: this.#selectionHeight,
-    };
-
     // Set preferences on save
-    this.#ipc.setPref(TRIBELOGGER_AREA_KEY, area);
-    // Update the actual in-memory tribe-logger instance
-    this.#ipc.updateTribeLogger('area', area);
+    this.#ipc.setPref(TRIBELOGGER_LOGSELECTION_KEY, this.#logSelection);
   }
 
-  async GetAreaPref(): Promise<void> {
-    const area: WindowImagetter.Area = (await this.#ipc.getPref(
-      TRIBELOGGER_AREA_KEY
-    )) as WindowImagetter.Area;
-    // console.log(area);
-    this.UpdateSelectionRect(area);
-  }
+  // async GetAreaPref(): Promise<void> {
+  //   const area: WindowImagetter.Area = (await this.#ipc.getPref(
+  //     TRIBELOGGER_AREA_KEY
+  //   )) as WindowImagetter.Area;
+  //   this.UpdateSelectionRect(area);
+  // }
 
   /**
    * Updates the selection rectangle when it is invalidated
@@ -223,9 +240,20 @@ export default class Settings extends React.Component {
   render() {
     return (
       <div>
-        {/* <Paper>
-          <Typography>Here you can adjust your settings.</Typography>
-        </Paper> */}
+        <Typography>
+          Adjust the green selection box where you see your ark window to cover
+          the tribe log text only.
+        </Typography>
+        <canvas
+          id="myCanvas"
+          ref={this.#canvas}
+          width={DESIRED_WIDTH}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          onMouseDown={this.BindForCanvasSelection}
+          onMouseUp={this.UnbindForCanvasSelection}
+          onMouseLeave={this.UnbindForCanvasSelection}
+        />
         {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
         {/* @ts-ignore */}
         <Button onClick={this.SaveAreaPref} varient="contained" color="primary">
@@ -238,28 +266,11 @@ export default class Settings extends React.Component {
           varient="contained"
           color="secondary"
         >
-          Get Window Image
+          Refresh Screenshot
         </Button>
-        {/* <Button>
-          Get Tribe Log
-        </Button> */}
-        {/* <button type="button" onClick={this.GetAreaPref}>
-          Get Pref Test
-        </button> */}
-        {/* eslint-disable-next-line @typescript-eslint/ban-ts-comment */}
-        {/* @ts-ignore */}
-        <Button onClick={this.ClearPrefs} varient="contained" color="secondary">
+        {/* <Button onClick={this.ClearPrefs} varient="contained" color="secondary">
           Clear
-        </Button>
-        <canvas
-          id="myCanvas"
-          ref={this.#canvas}
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          onMouseDown={this.BindForCanvasSelection}
-          onMouseUp={this.UnbindForCanvasSelection}
-          onMouseLeave={this.UnbindForCanvasSelection}
-        />
+        </Button> */}
       </div>
     );
   }

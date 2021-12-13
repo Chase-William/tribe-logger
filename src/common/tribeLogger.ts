@@ -1,7 +1,12 @@
 import ElectronStore from 'electron-store';
 import logger from '../../vendor/tribe-log-processor/dist/logger';
+import TribeLog from '../../vendor/tribe-log-processor/dist/tribeLog';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
-import { OCR, Preference, TRIBELOGGER_OCR_KEY } from './Schema';
+import {
+  AppPreferences,
+  LogSelection,
+  TRIBELOGGER_LOGSELECTION_KEY,
+} from './Schema';
 
 export interface ErrorHandler {
   (errorCode: number): void;
@@ -24,6 +29,8 @@ export default class TribeLogger {
   // Errors are propagated here
   errorHandler: ErrorHandler;
 
+  logs: TribeLog[] = [];
+
   constructor() {
     this.start = this.start.bind(this);
     this.update = this.update.bind(this);
@@ -34,18 +41,25 @@ export default class TribeLogger {
    * Create a new TribeLogger from the saved preferences
    * @returns New TribeLogger instance created from saved preference values
    */
-  static createTribeLoggerFromPrefs(
-    electronStore: ElectronStore<Preference>, // The local preferences utility
+  static tryCreateTribeLoggerFromPrefs(
+    electronStore: ElectronStore<AppPreferences>, // The local preferences utility
     updateHandler: VoidFunction, // Successful updates are sent here
     errorHandler: ErrorHandler // Errors are sent here
   ): TribeLogger {
     // Get the preference containing all sub preferences needed for our OCR operations
-    const ocrValues: OCR = electronStore.get(TRIBELOGGER_OCR_KEY) as OCR;
+    const logSelection: LogSelection = electronStore.get(
+      TRIBELOGGER_LOGSELECTION_KEY
+    );
+
+    // Return null if preferences was null, this may be the first time the user
+    // has launched the application
+    if (typeof logSelection === 'undefined') return null;
+
     const tribeLogger = new TribeLogger();
 
     // Update props
     tribeLogger.windowName = 'ARK: Survival Evolved';
-    tribeLogger.area = ocrValues.area;
+    tribeLogger.area = logSelection.selectionRect;
     tribeLogger.errorHandler = errorHandler;
     tribeLogger.updateHandler = updateHandler;
 
@@ -81,7 +95,7 @@ export default class TribeLogger {
       return;
     }
 
-    console.log(logger(result.TribeLogText));
+    const resultLogs: TribeLog[] = logger(result.TribeLogText);
 
     this.updateHandler();
   }
