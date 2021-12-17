@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Tab } from '@material-ui/core';
+import { AppBar, Tab, ThemeProvider } from '@material-ui/core';
 import './App.global.css';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 import { ipcRenderer } from 'electron/renderer';

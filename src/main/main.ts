@@ -15,11 +15,10 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import ElectronStore from 'electron-store';
-import TribeLogger from './TribeLogger';
-import MenuBuilder from './menu';
+import TribeLogger from '../common/tribeLogger';
 import { resolveHtmlPath } from './util';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
-import { Preference } from '../common/Schema';
+import { AppPreferences } from '../common/Schema';
 
 export default class AppUpdater {
   constructor() {
@@ -29,7 +28,7 @@ export default class AppUpdater {
   }
 }
 
-const store: ElectronStore<Preference> = new ElectronStore();
+const store: ElectronStore<AppPreferences> = new ElectronStore();
 let mainWindow: BrowserWindow | null = null;
 
 /**
@@ -40,8 +39,9 @@ ipcMain.handle(
   (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
     // console.log('Before native invoke');
     const result = WindowImagetter.GetWindowBitmap(windowName, false);
-    // console.log(result);
-    return result;
+    return result.ErrorCode !== WindowImagetter.WinImgGetError.Success
+      ? result.ErrorCode
+      : result;
   }
 );
 
@@ -52,6 +52,9 @@ ipcMain.handle('get-pref', (_e: Electron.IpcMainInvokeEvent, key: string) => {
   return store.get(key, null);
 });
 
+/**
+ * For setting preferences.
+ */
 ipcMain.on(
   'set-pref',
   (_e: Electron.IpcMainEvent, key: string, value: unknown) => {
@@ -102,8 +105,12 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 775,
+    height: 775,
+    minHeight: 750,
+    maxHeight: 800,
+    maxWidth: 800,
+    minWidth: 750,
     frame: true, // False to hide native frame
     icon: getAssetPath('icon.png'),
     webPreferences: {
@@ -169,36 +176,36 @@ app.on('activate', () => {
 });
 
 function errorHandler(): void {
-  // console.log('main error handler');
+  console.log('main error handler');
 }
 
 function updateHandler(): void {
-  // console.log('main update handler');
+  console.log('main update handler');
 }
 
-const tribeLogger = TribeLogger.createTribeLoggerFromPrefs(
+const tribeLogger = TribeLogger.tryCreateTribeLoggerFromPrefs(
   store,
   updateHandler,
   errorHandler
 );
 
-ipcMain.on(
-  'tribe-logger-update',
-  (_e: Electron.IpcMainEvent, { propName, value }) => {
-    switch (propName) {
-      case 'area':
-        tribeLogger.area = value;
-        break;
-      default:
-        break;
-    }
-  }
-);
+// ipcMain.on(
+//   'tribe-logger-update',
+//   (_e: Electron.IpcMainEvent, { propName, value }) => {
+//     switch (propName) {
+//       case 'area':
+//         tribeLogger.area = value;
+//         break;
+//       default:
+//         break;
+//     }
+//   }
+// );
 
 ipcMain.on(
   'toggle-tribe-logger',
   (_e: Electron.IpcMainEvent, shouldRun: boolean) => {
-    if (shouldRun) tribeLogger.Start();
-    else tribeLogger.Stop();
+    if (shouldRun) tribeLogger.start();
+    else tribeLogger.stop();
   }
 );

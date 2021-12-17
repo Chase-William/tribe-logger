@@ -1,11 +1,12 @@
 import ElectronStore from 'electron-store';
-import fs from 'fs';
+// import logger from '../../vendor/tribe-log-processor/dist/logger';
+import TribeLog from '../../vendor/tribe-log-processor/dist/tribeLog';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
-import { OCR, Preference, TRIBELOGGER_OCR_KEY } from '../common/Schema';
-import PhraseFinder from './PhraseFinder';
-import PhraseResult from './PhraseResult';
-
-const phraseFinder = PhraseFinder.createDefaultPhraseFinder();
+import {
+  AppPreferences,
+  LogSelection,
+  TRIBELOGGER_LOGSELECTION_KEY,
+} from './Schema';
 
 export interface ErrorHandler {
   (errorCode: number): void;
@@ -28,28 +29,37 @@ export default class TribeLogger {
   // Errors are propagated here
   errorHandler: ErrorHandler;
 
+  logs: TribeLog[] = [];
+
   constructor() {
-    this.Start = this.Start.bind(this);
-    this.Update = this.Update.bind(this);
-    this.Stop = this.Stop.bind(this);
+    this.start = this.start.bind(this);
+    this.update = this.update.bind(this);
+    this.stop = this.stop.bind(this);
   }
 
   /**
    * Create a new TribeLogger from the saved preferences
    * @returns New TribeLogger instance created from saved preference values
    */
-  static createTribeLoggerFromPrefs(
-    electronStore: ElectronStore<Preference>, // The local preferences utility
+  static tryCreateTribeLoggerFromPrefs(
+    electronStore: ElectronStore<AppPreferences>, // The local preferences utility
     updateHandler: VoidFunction, // Successful updates are sent here
     errorHandler: ErrorHandler // Errors are sent here
   ): TribeLogger {
     // Get the preference containing all sub preferences needed for our OCR operations
-    const ocrValues: OCR = electronStore.get(TRIBELOGGER_OCR_KEY) as OCR;
+    const logSelection: LogSelection = electronStore.get(
+      TRIBELOGGER_LOGSELECTION_KEY
+    );
+
+    // Return null if preferences was null, this may be the first time the user
+    // has launched the application
+    if (typeof logSelection === 'undefined') return null;
+
     const tribeLogger = new TribeLogger();
 
     // Update props
     tribeLogger.windowName = 'ARK: Survival Evolved';
-    tribeLogger.area = ocrValues.area;
+    tribeLogger.area = logSelection.selectionRect;
     tribeLogger.errorHandler = errorHandler;
     tribeLogger.updateHandler = updateHandler;
 
@@ -59,17 +69,17 @@ export default class TribeLogger {
   /**
    * Starts the TribeLogger.
    */
-  Start(): void {
+  start(): void {
     if (this.#isRunning) return;
-    this.#intervalHandle = setInterval(this.Update, 15000);
-    this.Update();
+    this.#intervalHandle = setInterval(this.update, 15000);
+    this.update();
     this.#isRunning = true;
   }
 
   /**
    * Reponsible for getting the tribe log text and propagated the proper update depending on it's findings.
    */
-  Update(): void {
+  update(): void {
     console.log(
       `Area { ${this.area.left} ${this.area.top} ${this.area.width} ${this.area.height} }`
     );
@@ -82,36 +92,18 @@ export default class TribeLogger {
 
     if (result.ErrorCode !== WindowImagetter.WinImgGetError.Success) {
       this.errorHandler(result.ErrorCode);
-    } else {
-      // Process Tribe Log Text here then call updateHandler
-      this.updateHandler();
-      const logs: string[] = result.TribeLogText.split('Day');
-      // call method on following obj to get all the needed info
-      const phrase = phraseFinder.getBestClassifiedPhrases(logs);
-      const results: PhraseResult[] = Array.from(phrase.values());
-      results.sort((r1: PhraseResult, r2: PhraseResult) => {
-        if (r1.index < r2.index) {
-          return -1;
-        }
-        return 1;
-      });
-      // console.log(results);
-      fs.writeFileSync('fuse_results.json', JSON.stringify(results));
-
-      let logstr = '';
-      // eslint-disable-next-line no-plusplus
-      for (let i = 0; i < logs.length; i++) {
-        logstr += logs[i];
-      }
-
-      fs.writeFileSync('logs.txt', logstr);
+      return;
     }
+
+    // const resultLogs: TribeLog[] = logger(result.TribeLogText);
+
+    this.updateHandler();
   }
 
   /**
    * Stops the TribeLogger.
    */
-  Stop(): void {
+  stop(): void {
     if (!this.#isRunning) return;
     clearInterval(this.#intervalHandle);
     this.#intervalHandle = null;

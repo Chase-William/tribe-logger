@@ -1,0 +1,30 @@
+[
+  {
+    "PhraseName": "EnemyDinoKilled",
+    "Pattern": "Your Tribe killed"
+  },
+  {
+    "PhraseName": "EnemyPlayerKilled",
+    "Pattern": "Your Tribe killed"
+  },
+  {
+    "PhraseName": "TribeMemberPodded",
+    "Pattern": "froze"
+  },
+  {
+    "PhraseName": "TribeMemberDemolished",
+    "Pattern": "demolished a"
+  },
+  {
+    "PhraseName": "TribeMemberTamed",
+    "Pattern": "Tamed an"
+  },
+  {
+    "PhraseName": "StructureDemolishedByEnemy",
+    "Pattern": "was destroyed"
+  },
+  {
+    "PhraseName": "DinoStarvedToDeath",
+    "Pattern": "starved to death"
+  }
+]

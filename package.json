@@ -3,7 +3,8 @@
   "productName": "ElectronReact",
   "description": "Electron application boilerplate based on React, React Router, Webpack, React Fast Refresh for rapid application development",
   "scripts": {
-    "init:vendor": "cd vendor/tribe-logger-lib && npm run init",
+    "vendor:tlp": "cd vendor/tribe-log-processor && git pull && yarn run build",
+    "init:all": "yarn && git submodule init && git submodule update --remote && cd ./vendor/tribe-logger-lib && yarn init:all && cd ../tribe-log-processor && yarn init:all",
     "build": "concurrently \"yarn build:main\" \"yarn build:renderer\"",
     "build:main": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.main.prod.babel.js",
     "build:renderer": "cross-env NODE_ENV=production webpack --config ./.erb/configs/webpack.config.renderer.prod.babel.js",
@@ -257,11 +258,13 @@
     "electron-store": "^8.0.0",
     "electron-updater": "^4.3.8",
     "fuse.js": "^6.4.6",
+    "fuzzy-phrase-classifier": "^1.1.0",
     "history": "4.x.x",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router-dom": "^5.2.0",
-    "regenerator-runtime": "^0.13.5"
+    "regenerator-runtime": "^0.13.5",
+    "xregexp": "^5.1.0"
   },
   "devEngines": {
     "node": ">=10.x",

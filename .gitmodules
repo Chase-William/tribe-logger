@@ -2,3 +2,6 @@
 	path = vendor/tribe-logger-lib
 	url = https://github.com/Chase-William/tribe-logger-lib.git
 	branch = main
+[submodule "vendor/tribe-log-processor"]
+	path = vendor/tribe-log-processor
+	url = https://github.com/Chase-William/tribe-log-processor.git
