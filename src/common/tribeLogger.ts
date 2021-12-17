@@ -1,5 +1,5 @@
 import ElectronStore from 'electron-store';
-import logger from '../../vendor/tribe-log-processor/dist/logger';
+// import logger from '../../vendor/tribe-log-processor/dist/logger';
 import TribeLog from '../../vendor/tribe-log-processor/dist/tribeLog';
 import { WindowImagetter } from '../../vendor/tribe-logger-lib/dist/index';
 import {
@@ -95,7 +95,7 @@ export default class TribeLogger {
       return;
     }
 
-    const resultLogs: TribeLog[] = logger(result.TribeLogText);
+    // const resultLogs: TribeLog[] = logger(result.TribeLogText);
 
     this.updateHandler();
   }

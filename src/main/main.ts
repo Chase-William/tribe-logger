@@ -39,8 +39,9 @@ ipcMain.handle(
   (_e: Electron.IpcMainInvokeEvent, windowName: string) => {
     // console.log('Before native invoke');
     const result = WindowImagetter.GetWindowBitmap(windowName, false);
-    // console.log(result);
-    return result;
+    return result.ErrorCode !== WindowImagetter.WinImgGetError.Success
+      ? result.ErrorCode
+      : result;
   }
 );
 
@@ -188,18 +189,18 @@ const tribeLogger = TribeLogger.tryCreateTribeLoggerFromPrefs(
   errorHandler
 );
 
-ipcMain.on(
-  'tribe-logger-update',
-  (_e: Electron.IpcMainEvent, { propName, value }) => {
-    switch (propName) {
-      case 'area':
-        tribeLogger.area = value;
-        break;
-      default:
-        break;
-    }
-  }
-);
+// ipcMain.on(
+//   'tribe-logger-update',
+//   (_e: Electron.IpcMainEvent, { propName, value }) => {
+//     switch (propName) {
+//       case 'area':
+//         tribeLogger.area = value;
+//         break;
+//       default:
+//         break;
+//     }
+//   }
+// );
 
 ipcMain.on(
   'toggle-tribe-logger',

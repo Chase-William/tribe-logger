@@ -8,6 +8,7 @@ export interface BitmapResult {
   BitmapBuffer: ArrayBuffer;
 }
 
+const SUCCESS_CODE = 0;
 const DESIRED_WIDTH = 700;
 
 export default class Settings extends React.Component {
@@ -48,10 +49,13 @@ export default class Settings extends React.Component {
     //   });
 
     (async () => {
-      const logSelection = (await this.#ipc.getPref(
+      this.#logSelection = (await this.#ipc.getPref(
         TRIBELOGGER_LOGSELECTION_KEY
       )) as LogSelection;
-      if (logSelection === null || typeof logSelection === 'undefined') {
+      if (
+        this.#logSelection === null ||
+        typeof this.#logSelection === 'undefined'
+      ) {
         this.#logSelection = {
           name: 'default',
           baseImageRect: {
@@ -68,12 +72,11 @@ export default class Settings extends React.Component {
         console.log(this.#logSelection);
         return;
       }
-      this.UpdateSelectionRect(logSelection);
+      console.log(this.#logSelection);
+      this.UpdateImageBitmap();
     })();
 
     this.#canvas = React.createRef();
-
-    this.UpdateImageBitmap();
   }
 
   /**
@@ -92,13 +95,13 @@ export default class Settings extends React.Component {
    * while also making sure to re-draw other present visuals.
    */
   async UpdateImageBitmap(): Promise<void> {
-    const { ErrorCode, BitmapBuffer, Width, Height } =
-      await this.#ipc.getWindowBitmap('ARK: Survival Evolved');
-
-    // Error, in the future provide better error messages
-    if (ErrorCode !== 0) {
+    const result = await this.#ipc.getWindowBitmap('ARK: Survival Evolved');
+    // An error occured so do not draw
+    if (result.ErrorCode !== SUCCESS_CODE) {
       return;
     }
+
+    const { Width, Height, BitmapBuffer } = result;
 
     // Create image data structure from buffer
     const imageData = new ImageData(
